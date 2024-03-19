@@ -18,8 +18,8 @@
 	"typings": "./lib/common/common.d.ts",
 	"devDependencies": {
 		"@types/mocha": "10.0.6",
-		"@types/node": "20.11.28",
-		"@typescript-eslint/parser": "7.2.0",
+		"@types/node": "20.11.30",
+		"@typescript-eslint/parser": "7.3.1",
 		"eslint": "8.57.0",
 		"mocha": "10.3.0",
 		"rimraf": "5.0.5",
