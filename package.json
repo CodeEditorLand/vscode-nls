@@ -1,38 +1,28 @@
 {
 	"name": "vscode-nls",
-	"version": "5.2.0",
+	"version": "0.0.1",
+	"private": false,
 	"description": "NPM module to externalize and localize VSCode extensions",
-	"author": "Microsoft Corporation",
-	"license": "MIT",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Microsoft/vscode-nls.git"
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
 	},
-	"bugs": {
-		"url": "https://github.com/Microsoft/vscode-nls/issues"
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@Playform.Cloud",
+		"url": "https://playform.cloud"
 	},
+	"type": "module",
 	"main": "./lib/node/main.js",
 	"browser": {
 		"./lib/node/main.js": "./lib/browser/main.js"
 	},
 	"typings": "./lib/common/common.d.ts",
-	"devDependencies": {
-		"@types/mocha": "10.0.6",
-		"@types/node": "20.11.30",
-		"@typescript-eslint/parser": "7.3.1",
-		"eslint": "8.57.0",
-		"mocha": "10.3.0",
-		"rimraf": "5.0.5",
-		"typescript": "5.4.2"
-	},
-	"scripts": {
-		"prepublishOnly": "npm run clean && npm run compile && npm run lint && npm run test",
-		"compile": "tsc -b ./tsconfig.json",
-		"watch": "tsc -b ./tsconfig.json -w",
-		"clean": "rimraf lib",
-		"test": "mocha",
-		"lint": "eslint --config .eslintrc.json ./**/*.ts"
-	},
 	"files": [
 		"lib/common",
 		"lib/browser",
@@ -43,5 +33,22 @@
 		"node.d.ts",
 		"browser.js",
 		"browser.d.ts"
-	]
+	],
+	"scripts": {
+		"clean": "rimraf lib",
+		"compile": "tsc -b ./tsconfig.json",
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"watch": "tsc -b ./tsconfig.json -w"
+	},
+	"devDependencies": {
+		"@types/mocha": "10.0.6",
+		"@types/node": "20.11.30",
+		"mocha": "10.3.0",
+		"rimraf": "5.0.5",
+		"typescript": "5.4.2",
+		"typescript-esbuild": "latest"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }
