@@ -1,12 +1,11 @@
 {
+	"name": "vscode-nls",
+	"description": "NPM module to externalize and localize VSCode extensions",
+	"main": "./lib/node/main.js",
 	"browser": {
 		"./lib/node/main.js": "./lib/browser/main.js"
 	},
-	"description": "NPM module to externalize and localize VSCode extensions",
-	"devDependencies": {
-		"@types/node": "20.14.9",
-		"rimraf": "5.0.7"
-	},
+	"typings": "./lib/common/common.d.ts",
 	"files": [
 		"lib/common",
 		"lib/browser",
@@ -18,12 +17,13 @@
 		"browser.js",
 		"browser.d.ts"
 	],
-	"main": "./lib/node/main.js",
-	"name": "vscode-nls",
 	"scripts": {
 		"clean": "rimraf lib",
 		"compile": "tsc -b ./tsconfig.json",
 		"prepublishOnly": "npm run clean && npm run compile && npm run lint && npm run test"
 	},
-	"typings": "./lib/common/common.d.ts"
+	"devDependencies": {
+		"@types/node": "20.14.9",
+		"rimraf": "5.0.7"
+	}
 }
