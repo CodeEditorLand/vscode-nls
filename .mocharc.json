@@ -1,0 +1,5 @@
+{
+	"spec": [ "lib/node/test", "lib/test" ],
+	"extension": ["js"],
+	"recursive": true
+}
