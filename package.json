@@ -4,8 +4,8 @@
 	},
 	"description": "NPM module to externalize and localize VSCode extensions",
 	"devDependencies": {
-		"@types/node": "14.14.31",
-		"rimraf": "3.0.2"
+		"@types/node": "22.0.2",
+		"rimraf": "6.0.1"
 	},
 	"files": [
 		"lib/common",
