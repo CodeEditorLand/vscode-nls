@@ -11,7 +11,7 @@ depends on Node.js however its primary use case is for VSCode extensions.
 [![NPM Version](https://img.shields.io/npm/v/vscode-nls.svg)](https://npmjs.org/package/vscode-nls)
 [![NPM Downloads](https://img.shields.io/npm/dm/vscode-nls.svg)](https://npmjs.org/package/vscode-nls)
 
-## Usage
+## 🛠️ Usage
 
 ```typescript
 // This must be the first import in the main entry file
