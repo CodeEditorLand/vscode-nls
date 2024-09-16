@@ -1,0 +1,10 @@
+{
+	"messages": [
+		"Guten Tag Welt",
+		"Auf Wiedersehen Welt"
+	],
+	"keys": [
+		"hello",
+		"goodBye"
+	]
+}
