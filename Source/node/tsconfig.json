@@ -1,13 +1,9 @@
 {
-    "extends": "../../tsconfig.base.json",
-    "compilerOptions": {
-        "outDir": "../../lib/node",
-        "types": [ "node" ]
-    },
-    "exclude": [
-        "test"
-    ],
-    "references": [
-        { "path": "../common/tsconfig.json" }
-    ]
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions": {
+		"outDir": "../../lib/node",
+		"types": ["node"]
+	},
+	"exclude": ["test"],
+	"references": [{ "path": "../common/tsconfig.json" }]
 }

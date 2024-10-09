@@ -3,26 +3,48 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import * as path from 'path';
-import * as fs from 'fs';
-
-import RAL from '../common/ral';
+import * as fs from "fs";
+import * as path from "path";
 
 import {
-	format, localize, isDefined, setPseudo, isPseudo, MessageFormat, BundleFormat, Options, TranslationConfig, LanguageBundle, LocalizeFunc,
-	NlsBundle, MetaDataFile, MetadataHeader, I18nBundle, SingleFileJsonFormat, LoadFunc
-} from '../common/common';
+	BundleFormat,
+	format,
+	I18nBundle,
+	isDefined,
+	isPseudo,
+	LanguageBundle,
+	LoadFunc,
+	localize,
+	LocalizeFunc,
+	MessageFormat,
+	MetaDataFile,
+	MetadataHeader,
+	NlsBundle,
+	Options,
+	setPseudo,
+	SingleFileJsonFormat,
+	TranslationConfig,
+} from "../common/common";
+import RAL from "../common/ral";
 
-export { MessageFormat, BundleFormat, Options, LocalizeInfo, LocalizeFunc, LoadFunc, KeyInfo } from '../common/common';
+export {
+	MessageFormat,
+	BundleFormat,
+	Options,
+	LocalizeInfo,
+	LocalizeFunc,
+	LoadFunc,
+	KeyInfo,
+} from "../common/common";
 
 const toString = Object.prototype.toString;
 
 function isNumber(value: any): value is number {
-	return toString.call(value) === '[object Number]';
+	return toString.call(value) === "[object Number]";
 }
 
 function isString(value: any): value is string {
-	return toString.call(value) === '[object String]';
+	return toString.call(value) === "[object String]";
 }
 
 function isBoolean(value: any): value is boolean {
@@ -30,7 +52,7 @@ function isBoolean(value: any): value is boolean {
 }
 
 function readJsonFileSync<T = any>(filename: string): T {
-	return JSON.parse(fs.readFileSync(filename, 'utf8')) as T;
+	return JSON.parse(fs.readFileSync(filename, "utf8")) as T;
 }
 
 interface VSCodeNlsConfig {
@@ -53,7 +75,7 @@ interface InternalOptions {
 	messageFormat: MessageFormat;
 	languagePackId?: string;
 	translationsConfigFile?: string;
-	translationsConfig?: TranslationConfig
+	translationsConfig?: TranslationConfig;
 	cacheRoot?: string;
 }
 
@@ -64,13 +86,21 @@ let resolvedBundles: {
 let options: InternalOptions;
 
 function initializeSettings() {
-	options = { locale: undefined, language: undefined, languagePackSupport: false, cacheLanguageResolution: true, messageFormat: MessageFormat.bundle };
+	options = {
+		locale: undefined,
+		language: undefined,
+		languagePackSupport: false,
+		cacheLanguageResolution: true,
+		messageFormat: MessageFormat.bundle,
+	};
 	if (isString(process.env.VSCODE_NLS_CONFIG)) {
 		try {
-			let vscodeOptions = JSON.parse(process.env.VSCODE_NLS_CONFIG) as VSCodeNlsConfig;
+			let vscodeOptions = JSON.parse(
+				process.env.VSCODE_NLS_CONFIG,
+			) as VSCodeNlsConfig;
 			let language: string | undefined;
 			if (vscodeOptions.availableLanguages) {
-				let value = vscodeOptions.availableLanguages['*'];
+				let value = vscodeOptions.availableLanguages["*"];
 				if (isString(value)) {
 					language = value;
 				}
@@ -80,12 +110,13 @@ function initializeSettings() {
 			}
 			if (language === undefined) {
 				options.language = options.locale;
-			} else if (language !== 'en') {
+			} else if (language !== "en") {
 				options.language = language;
 			}
 
 			if (isBoolean(vscodeOptions._languagePackSupport)) {
-				options.languagePackSupport = vscodeOptions._languagePackSupport;
+				options.languagePackSupport =
+					vscodeOptions._languagePackSupport;
 			}
 			if (isString(vscodeOptions._cacheRoot)) {
 				options.cacheRoot = vscodeOptions._cacheRoot;
@@ -94,18 +125,28 @@ function initializeSettings() {
 				options.languagePackId = vscodeOptions._languagePackId;
 			}
 			if (isString(vscodeOptions._translationsConfigFile)) {
-				options.translationsConfigFile = vscodeOptions._translationsConfigFile;
+				options.translationsConfigFile =
+					vscodeOptions._translationsConfigFile;
 				try {
-					options.translationsConfig = readJsonFileSync(options.translationsConfigFile);
+					options.translationsConfig = readJsonFileSync(
+						options.translationsConfigFile,
+					);
 				} catch (error) {
 					// We can't read the translation config file. Mark the cache as corrupted.
 					if (vscodeOptions._corruptedFile) {
-						const dirname = path.dirname(vscodeOptions._corruptedFile);
+						const dirname = path.dirname(
+							vscodeOptions._corruptedFile,
+						);
 						fs.exists(dirname, (exists) => {
 							if (exists) {
-								fs.writeFile(vscodeOptions._corruptedFile, 'corrupted', 'utf8', (err) => {
-									console.error(err);
-								});
+								fs.writeFile(
+									vscodeOptions._corruptedFile,
+									"corrupted",
+									"utf8",
+									(err) => {
+										console.error(err);
+									},
+								);
 							}
 						});
 					}
@@ -115,35 +156,45 @@ function initializeSettings() {
 			// Do nothing.
 		}
 	}
-	setPseudo(options.locale === 'pseudo');
+	setPseudo(options.locale === "pseudo");
 	resolvedBundles = Object.create(null);
 }
 initializeSettings();
 
 function supportsLanguagePack(): boolean {
-	return options.languagePackSupport === true && options.cacheRoot !== undefined && options.languagePackId !== undefined && options.translationsConfigFile !== undefined
-		&& options.translationsConfig !== undefined;
+	return (
+		options.languagePackSupport === true &&
+		options.cacheRoot !== undefined &&
+		options.languagePackId !== undefined &&
+		options.translationsConfigFile !== undefined &&
+		options.translationsConfig !== undefined
+	);
 }
 
 function createScopedLocalizeFunction(messages: string[]): LocalizeFunc {
 	return function (key: any, message: string, ...args: any[]): string {
 		if (isNumber(key)) {
 			if (key >= messages.length) {
-				console.error(`Broken localize call found. Index out of bounds. Stacktrace is\n: ${(<any>new Error('')).stack}`);
+				console.error(
+					`Broken localize call found. Index out of bounds. Stacktrace is\n: ${(<any>new Error("")).stack}`,
+				);
 				return;
 			}
 			return format(messages[key], args);
 		} else {
 			if (isString(message)) {
-				console.warn(`Message ${message} didn't get externalized correctly.`);
+				console.warn(
+					`Message ${message} didn't get externalized correctly.`,
+				);
 				return format(message, args);
 			} else {
-				console.error(`Broken localize call found. Stacktrace is\n: ${(<any>new Error('')).stack}`);
+				console.error(
+					`Broken localize call found. Stacktrace is\n: ${(<any>new Error("")).stack}`,
+				);
 			}
 		}
 	};
 }
-
 
 function resolveLanguage(file: string): string {
 	let resolvedLanguage: string;
@@ -151,20 +202,20 @@ function resolveLanguage(file: string): string {
 		resolvedLanguage = resolvedLanguage;
 	} else {
 		if (isPseudo || !options.language) {
-			resolvedLanguage = '.nls.json';
+			resolvedLanguage = ".nls.json";
 		} else {
 			let locale = options.language;
 			while (locale) {
-				var candidate = '.nls.' + locale + '.json';
+				var candidate = ".nls." + locale + ".json";
 				if (fs.existsSync(file + candidate)) {
 					resolvedLanguage = candidate;
 					break;
 				} else {
-					var index = locale.lastIndexOf('-');
+					var index = locale.lastIndexOf("-");
 					if (index > 0) {
 						locale = locale.substring(0, index);
 					} else {
-						resolvedLanguage = '.nls.json';
+						resolvedLanguage = ".nls.json";
 						locale = null;
 					}
 				}
@@ -184,7 +235,7 @@ function findInTheBoxBundle(root: string): string | undefined {
 		if (fs.existsSync(candidate)) {
 			return candidate;
 		} else {
-			let index = language.lastIndexOf('-');
+			let index = language.lastIndexOf("-");
 			if (index > 0) {
 				language = language.substring(0, index);
 			} else {
@@ -194,7 +245,7 @@ function findInTheBoxBundle(root: string): string | undefined {
 	}
 	// Test if we can reslove the default bundle.
 	if (language === undefined) {
-		let candidate = path.join(root, 'nls.bundle.json');
+		let candidate = path.join(root, "nls.bundle.json");
 		if (fs.existsSync(candidate)) {
 			return candidate;
 		}
@@ -206,9 +257,9 @@ function mkdir(directory: string) {
 	try {
 		fs.mkdirSync(directory);
 	} catch (err) {
-		if (err.code === 'EEXIST') {
+		if (err.code === "EEXIST") {
 			return;
-		} else if (err.code === 'ENOENT') {
+		} else if (err.code === "ENOENT") {
 			let parent = path.dirname(directory);
 			if (parent !== directory) {
 				mkdir(parent);
@@ -221,7 +272,9 @@ function mkdir(directory: string) {
 }
 
 function createDefaultNlsBundle(folder: string): NlsBundle {
-	let metaData: MetaDataFile = readJsonFileSync(path.join(folder, 'nls.metadata.json'));
+	let metaData: MetaDataFile = readJsonFileSync(
+		path.join(folder, "nls.metadata.json"),
+	);
 	let result: NlsBundle = Object.create(null);
 	for (let module in metaData) {
 		let entry = metaData[module];
@@ -230,13 +283,19 @@ function createDefaultNlsBundle(folder: string): NlsBundle {
 	return result;
 }
 
-function createNLSBundle(header: MetadataHeader, metaDataPath: string): NlsBundle | undefined {
+function createNLSBundle(
+	header: MetadataHeader,
+	metaDataPath: string,
+): NlsBundle | undefined {
 	let languagePackLocation = options.translationsConfig[header.id];
 	if (!languagePackLocation) {
 		return undefined;
 	}
-	let languagePack: I18nBundle = readJsonFileSync(languagePackLocation).contents;
-	let metaData: MetaDataFile = readJsonFileSync(path.join(metaDataPath, 'nls.metadata.json'));
+	let languagePack: I18nBundle =
+		readJsonFileSync(languagePackLocation).contents;
+	let metaData: MetaDataFile = readJsonFileSync(
+		path.join(metaDataPath, "nls.metadata.json"),
+	);
 	let result: NlsBundle = Object.create(null);
 	for (let module in metaData) {
 		let entry = metaData[module];
@@ -267,30 +326,43 @@ function touch(file: string) {
 	});
 }
 
-function cacheBundle(key: string, bundle: LanguageBundle | null): LanguageBundle | null {
+function cacheBundle(
+	key: string,
+	bundle: LanguageBundle | null,
+): LanguageBundle | null {
 	resolvedBundles[key] = bundle;
 	return bundle;
 }
 
-function loadNlsBundleOrCreateFromI18n(header: MetadataHeader, bundlePath: string): NlsBundle | undefined {
+function loadNlsBundleOrCreateFromI18n(
+	header: MetadataHeader,
+	bundlePath: string,
+): NlsBundle | undefined {
 	let result: NlsBundle;
 
-	let bundle = path.join(options.cacheRoot, `${header.id}-${header.hash}.json`);
+	let bundle = path.join(
+		options.cacheRoot,
+		`${header.id}-${header.hash}.json`,
+	);
 	let useMemoryOnly: boolean = false;
 	let writeBundle: boolean = false;
 	try {
-		result = JSON.parse(fs.readFileSync(bundle, { encoding: 'utf8', flag: 'r' }));
+		result = JSON.parse(
+			fs.readFileSync(bundle, { encoding: "utf8", flag: "r" }),
+		);
 		touch(bundle);
 		return result;
 	} catch (err) {
-		if (err.code === 'ENOENT') {
+		if (err.code === "ENOENT") {
 			writeBundle = true;
 		} else if (err instanceof SyntaxError) {
 			// We have a syntax error. So no valid JSON. Use
 			console.log(`Syntax error parsing message bundle: ${err.message}.`);
 			fs.unlink(bundle, (err) => {
 				if (err) {
-					console.error(`Deleting corrupted bundle ${bundle} failed.`);
+					console.error(
+						`Deleting corrupted bundle ${bundle} failed.`,
+					);
 				}
 			});
 			useMemoryOnly = true;
@@ -306,9 +378,12 @@ function loadNlsBundleOrCreateFromI18n(header: MetadataHeader, bundlePath: strin
 
 	if (writeBundle) {
 		try {
-			fs.writeFileSync(bundle, JSON.stringify(result), { encoding: 'utf8', flag: 'wx' });
+			fs.writeFileSync(bundle, JSON.stringify(result), {
+				encoding: "utf8",
+				flag: "wx",
+			});
 		} catch (err) {
-			if (err.code === 'EEXIST') {
+			if (err.code === "EEXIST") {
 				return result;
 			}
 			throw err;
@@ -327,7 +402,10 @@ function loadDefaultNlsBundle(bundlePath: string): NlsBundle | undefined {
 	}
 }
 
-function loadNlsBundle(header: MetadataHeader, bundlePath: string): NlsBundle | undefined {
+function loadNlsBundle(
+	header: MetadataHeader,
+	bundlePath: string,
+): NlsBundle | undefined {
 	let result: NlsBundle;
 
 	// Core decided to use a language pack. Do the same in the extension
@@ -362,7 +440,7 @@ function tryFindMetaDataHeaderFile(file: string): string {
 	let result: string;
 	let dirname = path.dirname(file);
 	while (true) {
-		result = path.join(dirname, 'nls.metadata.header.json');
+		result = path.join(dirname, "nls.metadata.header.json");
 		if (fs.existsSync(result)) {
 			break;
 		}
@@ -389,64 +467,83 @@ export function loadMessageBundle(file?: string): LocalizeFunc {
 		file = file.substr(0, file.length - ext.length);
 	}
 
-	if (options.messageFormat === MessageFormat.both || options.messageFormat === MessageFormat.bundle) {
+	if (
+		options.messageFormat === MessageFormat.both ||
+		options.messageFormat === MessageFormat.bundle
+	) {
 		let headerFile = tryFindMetaDataHeaderFile(file);
 		if (headerFile) {
 			let bundlePath = path.dirname(headerFile);
 			let bundle: LanguageBundle = resolvedBundles[bundlePath];
 			if (bundle === undefined) {
 				try {
-					let header: MetadataHeader = JSON.parse(fs.readFileSync(headerFile, 'utf8'));
+					let header: MetadataHeader = JSON.parse(
+						fs.readFileSync(headerFile, "utf8"),
+					);
 					try {
 						let nlsBundle = loadNlsBundle(header, bundlePath);
-						bundle = cacheBundle(bundlePath, nlsBundle ? { header, nlsBundle } : null);
+						bundle = cacheBundle(
+							bundlePath,
+							nlsBundle ? { header, nlsBundle } : null,
+						);
 					} catch (err) {
-						console.error('Failed to load nls bundle', err);
+						console.error("Failed to load nls bundle", err);
 						bundle = cacheBundle(bundlePath, null);
 					}
 				} catch (err) {
-					console.error('Failed to read header file', err);
+					console.error("Failed to read header file", err);
 					bundle = cacheBundle(bundlePath, null);
 				}
 			}
 			if (bundle) {
-				let module = file.substr(bundlePath.length + 1).replace(/\\/g, '/');
+				let module = file
+					.substr(bundlePath.length + 1)
+					.replace(/\\/g, "/");
 				let messages = bundle.nlsBundle[module];
 				if (messages === undefined) {
-					console.error(`Messages for file ${file} not found. See console for details.`);
+					console.error(
+						`Messages for file ${file} not found. See console for details.`,
+					);
 					return function (): string {
-						return 'Messages not found.';
+						return "Messages not found.";
 					};
 				}
 				return createScopedLocalizeFunction(messages);
 			}
 		}
 	}
-	if (options.messageFormat === MessageFormat.both || options.messageFormat === MessageFormat.file) {
+	if (
+		options.messageFormat === MessageFormat.both ||
+		options.messageFormat === MessageFormat.file
+	) {
 		// Try to load a single file bundle
 		try {
-			let json: SingleFileJsonFormat = readJsonFileSync(resolveLanguage(file));
+			let json: SingleFileJsonFormat = readJsonFileSync(
+				resolveLanguage(file),
+			);
 			if (Array.isArray(json)) {
 				return createScopedLocalizeFunction(json);
 			} else {
 				if (isDefined(json.messages) && isDefined(json.keys)) {
 					return createScopedLocalizeFunction(json.messages);
 				} else {
-					console.error(`String bundle '${file}' uses an unsupported format.`);
+					console.error(
+						`String bundle '${file}' uses an unsupported format.`,
+					);
 					return function () {
-						return 'File bundle has unsupported format. See console for details';
+						return "File bundle has unsupported format. See console for details";
 					};
 				}
 			}
 		} catch (err) {
-			if (err.code !== 'ENOENT') {
-				console.error('Failed to load single file bundle', err);
+			if (err.code !== "ENOENT") {
+				console.error("Failed to load single file bundle", err);
 			}
 		}
 	}
 	console.error(`Failed to load message bundle for file ${file}`);
 	return function (): string {
-		return 'Failed to load message bundle. See console for details.';
+		return "Failed to load message bundle. See console for details.";
 	};
 }
 
@@ -460,15 +557,20 @@ export function config(opts?: Options): LoadFunc {
 		if (opts.messageFormat !== undefined) {
 			options.messageFormat = opts.messageFormat;
 		}
-		if (opts.bundleFormat === BundleFormat.standalone && options.languagePackSupport === true) {
+		if (
+			opts.bundleFormat === BundleFormat.standalone &&
+			options.languagePackSupport === true
+		) {
 			options.languagePackSupport = false;
 		}
 	}
-	setPseudo(options.locale === 'pseudo');
+	setPseudo(options.locale === "pseudo");
 	return loadMessageBundle;
 }
 
-RAL.install(Object.freeze<RAL>({
-	loadMessageBundle: loadMessageBundle,
-	config: config
-}));
+RAL.install(
+	Object.freeze<RAL>({
+		loadMessageBundle: loadMessageBundle,
+		config: config,
+	}),
+);
