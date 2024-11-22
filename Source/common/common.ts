@@ -32,6 +32,7 @@ export interface LocalizeInfo {
 namespace LocalizeInfo {
 	export function is(value: any): value is LocalizeInfo {
 		let candidate = value as LocalizeInfo;
+
 		return (
 			candidate &&
 			isDefined(candidate.key) &&
@@ -113,6 +114,7 @@ export function setPseudo(pseudo: boolean) {
 
 export function format(message: string, args: any[]): string {
 	let result: string;
+
 	if (isPseudo) {
 		// FF3B and FF3D is the Unicode zenkaku representation for [ and ]
 		message = "\uFF3B" + message.replace(/[aouei]/g, "$&$&") + "\uFF3D";
@@ -122,8 +124,11 @@ export function format(message: string, args: any[]): string {
 	} else {
 		result = message.replace(/\{(\d+)\}/g, (match, rest) => {
 			let index = rest[0];
+
 			let arg = args[index];
+
 			let replacement = match;
+
 			if (typeof arg === "string") {
 				replacement = arg;
 			} else if (

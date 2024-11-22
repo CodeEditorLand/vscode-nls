@@ -93,14 +93,18 @@ function initializeSettings() {
 		cacheLanguageResolution: true,
 		messageFormat: MessageFormat.bundle,
 	};
+
 	if (isString(process.env.VSCODE_NLS_CONFIG)) {
 		try {
 			let vscodeOptions = JSON.parse(
 				process.env.VSCODE_NLS_CONFIG,
 			) as VSCodeNlsConfig;
+
 			let language: string | undefined;
+
 			if (vscodeOptions.availableLanguages) {
 				let value = vscodeOptions.availableLanguages["*"];
+
 				if (isString(value)) {
 					language = value;
 				}
@@ -127,6 +131,7 @@ function initializeSettings() {
 			if (isString(vscodeOptions._translationsConfigFile)) {
 				options.translationsConfigFile =
 					vscodeOptions._translationsConfigFile;
+
 				try {
 					options.translationsConfig = readJsonFileSync(
 						options.translationsConfigFile,
@@ -178,6 +183,7 @@ function createScopedLocalizeFunction(messages: string[]): LocalizeFunc {
 				console.error(
 					`Broken localize call found. Index out of bounds. Stacktrace is\n: ${(<any>new Error("")).stack}`,
 				);
+
 				return;
 			}
 			return format(messages[key], args);
@@ -186,6 +192,7 @@ function createScopedLocalizeFunction(messages: string[]): LocalizeFunc {
 				console.warn(
 					`Message ${message} didn't get externalized correctly.`,
 				);
+
 				return format(message, args);
 			} else {
 				console.error(
@@ -198,6 +205,7 @@ function createScopedLocalizeFunction(messages: string[]): LocalizeFunc {
 
 function resolveLanguage(file: string): string {
 	let resolvedLanguage: string;
+
 	if (options.cacheLanguageResolution && resolvedLanguage) {
 		resolvedLanguage = resolvedLanguage;
 	} else {
@@ -205,13 +213,17 @@ function resolveLanguage(file: string): string {
 			resolvedLanguage = ".nls.json";
 		} else {
 			let locale = options.language;
+
 			while (locale) {
 				var candidate = ".nls." + locale + ".json";
+
 				if (fs.existsSync(file + candidate)) {
 					resolvedLanguage = candidate;
+
 					break;
 				} else {
 					var index = locale.lastIndexOf("-");
+
 					if (index > 0) {
 						locale = locale.substring(0, index);
 					} else {
@@ -230,12 +242,15 @@ function resolveLanguage(file: string): string {
 
 function findInTheBoxBundle(root: string): string | undefined {
 	let language = options.language;
+
 	while (language) {
 		let candidate = path.join(root, `nls.bundle.${language}.json`);
+
 		if (fs.existsSync(candidate)) {
 			return candidate;
 		} else {
 			let index = language.lastIndexOf("-");
+
 			if (index > 0) {
 				language = language.substring(0, index);
 			} else {
@@ -246,6 +261,7 @@ function findInTheBoxBundle(root: string): string | undefined {
 	// Test if we can reslove the default bundle.
 	if (language === undefined) {
 		let candidate = path.join(root, "nls.bundle.json");
+
 		if (fs.existsSync(candidate)) {
 			return candidate;
 		}
@@ -261,6 +277,7 @@ function mkdir(directory: string) {
 			return;
 		} else if (err.code === "ENOENT") {
 			let parent = path.dirname(directory);
+
 			if (parent !== directory) {
 				mkdir(parent);
 				fs.mkdirSync(directory);
@@ -275,7 +292,9 @@ function createDefaultNlsBundle(folder: string): NlsBundle {
 	let metaData: MetaDataFile = readJsonFileSync(
 		path.join(folder, "nls.metadata.json"),
 	);
+
 	let result: NlsBundle = Object.create(null);
+
 	for (let module in metaData) {
 		let entry = metaData[module];
 		result[module] = entry.messages;
@@ -288,24 +307,34 @@ function createNLSBundle(
 	metaDataPath: string,
 ): NlsBundle | undefined {
 	let languagePackLocation = options.translationsConfig[header.id];
+
 	if (!languagePackLocation) {
 		return undefined;
 	}
 	let languagePack: I18nBundle =
 		readJsonFileSync(languagePackLocation).contents;
+
 	let metaData: MetaDataFile = readJsonFileSync(
 		path.join(metaDataPath, "nls.metadata.json"),
 	);
+
 	let result: NlsBundle = Object.create(null);
+
 	for (let module in metaData) {
 		let entry = metaData[module];
+
 		let translations = languagePack[`${header.outDir}/${module}`];
+
 		if (translations) {
 			let resultMessages: string[] = [];
+
 			for (let i = 0; i < entry.keys.length; i++) {
 				let messageKey = entry.keys[i];
+
 				let key = isString(messageKey) ? messageKey : messageKey.key;
+
 				let translatedMessage = translations[key];
+
 				if (translatedMessage === undefined) {
 					translatedMessage = entry.messages[i];
 				}
@@ -331,6 +360,7 @@ function cacheBundle(
 	bundle: LanguageBundle | null,
 ): LanguageBundle | null {
 	resolvedBundles[key] = bundle;
+
 	return bundle;
 }
 
@@ -344,13 +374,17 @@ function loadNlsBundleOrCreateFromI18n(
 		options.cacheRoot,
 		`${header.id}-${header.hash}.json`,
 	);
+
 	let useMemoryOnly: boolean = false;
+
 	let writeBundle: boolean = false;
+
 	try {
 		result = JSON.parse(
 			fs.readFileSync(bundle, { encoding: "utf8", flag: "r" }),
 		);
 		touch(bundle);
+
 		return result;
 	} catch (err) {
 		if (err.code === "ENOENT") {
@@ -372,6 +406,7 @@ function loadNlsBundleOrCreateFromI18n(
 	}
 
 	result = createNLSBundle(header, bundlePath);
+
 	if (!result || useMemoryOnly) {
 		return result;
 	}
@@ -398,6 +433,7 @@ function loadDefaultNlsBundle(bundlePath: string): NlsBundle | undefined {
 		return createDefaultNlsBundle(bundlePath);
 	} catch (err) {
 		console.log(`Generating default bundle from meta data failed.`, err);
+
 		return undefined;
 	}
 }
@@ -424,6 +460,7 @@ function loadNlsBundle(
 			return loadDefaultNlsBundle(bundlePath);
 		}
 		let candidate = findInTheBoxBundle(bundlePath);
+
 		if (candidate) {
 			try {
 				return readJsonFileSync(candidate);
@@ -438,15 +475,20 @@ function loadNlsBundle(
 
 function tryFindMetaDataHeaderFile(file: string): string {
 	let result: string;
+
 	let dirname = path.dirname(file);
+
 	while (true) {
 		result = path.join(dirname, "nls.metadata.header.json");
+
 		if (fs.existsSync(result)) {
 			break;
 		}
 		let parent = path.dirname(dirname);
+
 		if (parent === dirname) {
 			result = undefined;
+
 			break;
 		} else {
 			dirname = parent;
@@ -463,6 +505,7 @@ export function loadMessageBundle(file?: string): LocalizeFunc {
 	}
 	// Remove extension since we load json files.
 	let ext = path.extname(file);
+
 	if (ext) {
 		file = file.substr(0, file.length - ext.length);
 	}
@@ -472,14 +515,18 @@ export function loadMessageBundle(file?: string): LocalizeFunc {
 		options.messageFormat === MessageFormat.bundle
 	) {
 		let headerFile = tryFindMetaDataHeaderFile(file);
+
 		if (headerFile) {
 			let bundlePath = path.dirname(headerFile);
+
 			let bundle: LanguageBundle = resolvedBundles[bundlePath];
+
 			if (bundle === undefined) {
 				try {
 					let header: MetadataHeader = JSON.parse(
 						fs.readFileSync(headerFile, "utf8"),
 					);
+
 					try {
 						let nlsBundle = loadNlsBundle(header, bundlePath);
 						bundle = cacheBundle(
@@ -499,11 +546,14 @@ export function loadMessageBundle(file?: string): LocalizeFunc {
 				let module = file
 					.substr(bundlePath.length + 1)
 					.replace(/\\/g, "/");
+
 				let messages = bundle.nlsBundle[module];
+
 				if (messages === undefined) {
 					console.error(
 						`Messages for file ${file} not found. See console for details.`,
 					);
+
 					return function (): string {
 						return "Messages not found.";
 					};
@@ -521,6 +571,7 @@ export function loadMessageBundle(file?: string): LocalizeFunc {
 			let json: SingleFileJsonFormat = readJsonFileSync(
 				resolveLanguage(file),
 			);
+
 			if (Array.isArray(json)) {
 				return createScopedLocalizeFunction(json);
 			} else {
@@ -530,6 +581,7 @@ export function loadMessageBundle(file?: string): LocalizeFunc {
 					console.error(
 						`String bundle '${file}' uses an unsupported format.`,
 					);
+
 					return function () {
 						return "File bundle has unsupported format. See console for details";
 					};
@@ -542,6 +594,7 @@ export function loadMessageBundle(file?: string): LocalizeFunc {
 		}
 	}
 	console.error(`Failed to load message bundle for file ${file}`);
+
 	return function (): string {
 		return "Failed to load message bundle. See console for details.";
 	};
@@ -565,6 +618,7 @@ export function config(opts?: Options): LoadFunc {
 		}
 	}
 	setPseudo(options.locale === "pseudo");
+
 	return loadMessageBundle;
 }
 
