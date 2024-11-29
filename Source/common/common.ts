@@ -19,13 +19,17 @@ export enum BundleFormat {
 
 export interface Options {
 	locale?: string;
+
 	cacheLanguageResolution?: boolean;
+
 	messageFormat?: MessageFormat;
+
 	bundleFormat?: BundleFormat;
 }
 
 export interface LocalizeInfo {
 	key: string;
+
 	comment: string[];
 }
 
@@ -70,13 +74,17 @@ export type KeyInfo = string | LocalizeInfo;
 
 export interface MetaDataEntry {
 	messages: string[];
+
 	keys: KeyInfo[];
 }
 
 export interface MetadataHeader {
 	id: string;
+
 	type: string;
+
 	hash: string;
+
 	outDir: string;
 }
 
@@ -90,6 +98,7 @@ export interface TranslationConfig {
 
 export interface I18nBundle {
 	version: string;
+
 	contents: {
 		[module: string]: {
 			[messageKey: string]: string;
@@ -99,6 +108,7 @@ export interface I18nBundle {
 
 export interface LanguageBundle {
 	header: MetadataHeader;
+
 	nlsBundle: NlsBundle;
 }
 
@@ -119,6 +129,7 @@ export function format(message: string, args: any[]): string {
 		// FF3B and FF3D is the Unicode zenkaku representation for [ and ]
 		message = "\uFF3B" + message.replace(/[aouei]/g, "$&$&") + "\uFF3D";
 	}
+
 	if (args.length === 0) {
 		result = message;
 	} else {
@@ -139,9 +150,11 @@ export function format(message: string, args: any[]): string {
 			) {
 				replacement = String(arg);
 			}
+
 			return replacement;
 		});
 	}
+
 	return result;
 }
 

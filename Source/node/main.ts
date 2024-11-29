@@ -57,25 +57,39 @@ function readJsonFileSync<T = any>(filename: string): T {
 
 interface VSCodeNlsConfig {
 	locale: string;
+
 	availableLanguages: {
 		[pack: string]: string;
 	};
+
 	_languagePackSupport?: boolean;
+
 	_languagePackId?: string;
+
 	_translationsConfigFile?: string;
+
 	_cacheRoot?: string;
+
 	_corruptedFile: string;
 }
 
 interface InternalOptions {
 	locale: string | undefined;
+
 	language: string | undefined;
+
 	languagePackSupport: boolean;
+
 	cacheLanguageResolution: boolean;
+
 	messageFormat: MessageFormat;
+
 	languagePackId?: string;
+
 	translationsConfigFile?: string;
+
 	translationsConfig?: TranslationConfig;
+
 	cacheRoot?: string;
 }
 
@@ -109,9 +123,11 @@ function initializeSettings() {
 					language = value;
 				}
 			}
+
 			if (isString(vscodeOptions.locale)) {
 				options.locale = vscodeOptions.locale.toLowerCase();
 			}
+
 			if (language === undefined) {
 				options.language = options.locale;
 			} else if (language !== "en") {
@@ -122,12 +138,15 @@ function initializeSettings() {
 				options.languagePackSupport =
 					vscodeOptions._languagePackSupport;
 			}
+
 			if (isString(vscodeOptions._cacheRoot)) {
 				options.cacheRoot = vscodeOptions._cacheRoot;
 			}
+
 			if (isString(vscodeOptions._languagePackId)) {
 				options.languagePackId = vscodeOptions._languagePackId;
 			}
+
 			if (isString(vscodeOptions._translationsConfigFile)) {
 				options.translationsConfigFile =
 					vscodeOptions._translationsConfigFile;
@@ -142,6 +161,7 @@ function initializeSettings() {
 						const dirname = path.dirname(
 							vscodeOptions._corruptedFile,
 						);
+
 						fs.exists(dirname, (exists) => {
 							if (exists) {
 								fs.writeFile(
@@ -161,7 +181,9 @@ function initializeSettings() {
 			// Do nothing.
 		}
 	}
+
 	setPseudo(options.locale === "pseudo");
+
 	resolvedBundles = Object.create(null);
 }
 initializeSettings();
@@ -186,6 +208,7 @@ function createScopedLocalizeFunction(messages: string[]): LocalizeFunc {
 
 				return;
 			}
+
 			return format(messages[key], args);
 		} else {
 			if (isString(message)) {
@@ -228,15 +251,18 @@ function resolveLanguage(file: string): string {
 						locale = locale.substring(0, index);
 					} else {
 						resolvedLanguage = ".nls.json";
+
 						locale = null;
 					}
 				}
 			}
 		}
+
 		if (options.cacheLanguageResolution) {
 			resolvedLanguage = resolvedLanguage;
 		}
 	}
+
 	return file + resolvedLanguage;
 }
 
@@ -266,6 +292,7 @@ function findInTheBoxBundle(root: string): string | undefined {
 			return candidate;
 		}
 	}
+
 	return undefined;
 }
 
@@ -280,6 +307,7 @@ function mkdir(directory: string) {
 
 			if (parent !== directory) {
 				mkdir(parent);
+
 				fs.mkdirSync(directory);
 			}
 		} else {
@@ -297,8 +325,10 @@ function createDefaultNlsBundle(folder: string): NlsBundle {
 
 	for (let module in metaData) {
 		let entry = metaData[module];
+
 		result[module] = entry.messages;
 	}
+
 	return result;
 }
 
@@ -311,6 +341,7 @@ function createNLSBundle(
 	if (!languagePackLocation) {
 		return undefined;
 	}
+
 	let languagePack: I18nBundle =
 		readJsonFileSync(languagePackLocation).contents;
 
@@ -338,18 +369,22 @@ function createNLSBundle(
 				if (translatedMessage === undefined) {
 					translatedMessage = entry.messages[i];
 				}
+
 				resultMessages.push(translatedMessage);
 			}
+
 			result[module] = resultMessages;
 		} else {
 			result[module] = entry.messages;
 		}
 	}
+
 	return result;
 }
 
 function touch(file: string) {
 	let d = new Date();
+
 	fs.utimes(file, d, d, () => {
 		// Do nothing. Ignore
 	});
@@ -383,6 +418,7 @@ function loadNlsBundleOrCreateFromI18n(
 		result = JSON.parse(
 			fs.readFileSync(bundle, { encoding: "utf8", flag: "r" }),
 		);
+
 		touch(bundle);
 
 		return result;
@@ -392,6 +428,7 @@ function loadNlsBundleOrCreateFromI18n(
 		} else if (err instanceof SyntaxError) {
 			// We have a syntax error. So no valid JSON. Use
 			console.log(`Syntax error parsing message bundle: ${err.message}.`);
+
 			fs.unlink(bundle, (err) => {
 				if (err) {
 					console.error(
@@ -399,6 +436,7 @@ function loadNlsBundleOrCreateFromI18n(
 					);
 				}
 			});
+
 			useMemoryOnly = true;
 		} else {
 			throw err;
@@ -421,6 +459,7 @@ function loadNlsBundleOrCreateFromI18n(
 			if (err.code === "EEXIST") {
 				return result;
 			}
+
 			throw err;
 		}
 	}
@@ -452,6 +491,7 @@ function loadNlsBundle(
 			console.log(`Load or create bundle failed `, err);
 		}
 	}
+
 	if (!result) {
 		// No language pack found, but core is running in language pack mode
 		// Don't try to use old in the box bundles since the might be stale
@@ -459,6 +499,7 @@ function loadNlsBundle(
 		if (options.languagePackSupport) {
 			return loadDefaultNlsBundle(bundlePath);
 		}
+
 		let candidate = findInTheBoxBundle(bundlePath);
 
 		if (candidate) {
@@ -468,8 +509,10 @@ function loadNlsBundle(
 				console.log(`Loading in the box message bundle failed.`, err);
 			}
 		}
+
 		result = loadDefaultNlsBundle(bundlePath);
 	}
+
 	return result;
 }
 
@@ -484,6 +527,7 @@ function tryFindMetaDataHeaderFile(file: string): string {
 		if (fs.existsSync(result)) {
 			break;
 		}
+
 		let parent = path.dirname(dirname);
 
 		if (parent === dirname) {
@@ -494,6 +538,7 @@ function tryFindMetaDataHeaderFile(file: string): string {
 			dirname = parent;
 		}
 	}
+
 	return result;
 }
 
@@ -529,19 +574,23 @@ export function loadMessageBundle(file?: string): LocalizeFunc {
 
 					try {
 						let nlsBundle = loadNlsBundle(header, bundlePath);
+
 						bundle = cacheBundle(
 							bundlePath,
 							nlsBundle ? { header, nlsBundle } : null,
 						);
 					} catch (err) {
 						console.error("Failed to load nls bundle", err);
+
 						bundle = cacheBundle(bundlePath, null);
 					}
 				} catch (err) {
 					console.error("Failed to read header file", err);
+
 					bundle = cacheBundle(bundlePath, null);
 				}
 			}
+
 			if (bundle) {
 				let module = file
 					.substr(bundlePath.length + 1)
@@ -558,10 +607,12 @@ export function loadMessageBundle(file?: string): LocalizeFunc {
 						return "Messages not found.";
 					};
 				}
+
 				return createScopedLocalizeFunction(messages);
 			}
 		}
 	}
+
 	if (
 		options.messageFormat === MessageFormat.both ||
 		options.messageFormat === MessageFormat.file
@@ -593,6 +644,7 @@ export function loadMessageBundle(file?: string): LocalizeFunc {
 			}
 		}
 	}
+
 	console.error(`Failed to load message bundle for file ${file}`);
 
 	return function (): string {
@@ -604,12 +656,16 @@ export function config(opts?: Options): LoadFunc {
 	if (opts) {
 		if (isString(opts.locale)) {
 			options.locale = opts.locale.toLowerCase();
+
 			options.language = options.locale;
+
 			resolvedBundles = Object.create(null);
 		}
+
 		if (opts.messageFormat !== undefined) {
 			options.messageFormat = opts.messageFormat;
 		}
+
 		if (
 			opts.bundleFormat === BundleFormat.standalone &&
 			options.languagePackSupport === true
@@ -617,6 +673,7 @@ export function config(opts?: Options): LoadFunc {
 			options.languagePackSupport = false;
 		}
 	}
+
 	setPseudo(options.locale === "pseudo");
 
 	return loadMessageBundle;

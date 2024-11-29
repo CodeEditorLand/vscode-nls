@@ -6,6 +6,7 @@ import { LoadFunc, LocalizeFunc, Options } from "./common";
 
 interface RAL {
 	loadMessageBundle(file?: string): LocalizeFunc;
+
 	config(opts?: Options): LoadFunc;
 }
 
@@ -15,6 +16,7 @@ function RAL(): RAL {
 	if (_ral === undefined) {
 		throw new Error(`No runtime abstraction layer installed`);
 	}
+
 	return _ral;
 }
 
@@ -23,6 +25,7 @@ namespace RAL {
 		if (ral === undefined) {
 			throw new Error(`No runtime abstraction layer provided`);
 		}
+
 		_ral = ral;
 	}
 }
