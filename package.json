@@ -2,6 +2,7 @@
 	"browser": {
 		"./lib/node/main.js": "./lib/browser/main.js"
 	},
+	"dependencies": {},
 	"description": "NPM module to externalize and localize VSCode extensions",
 	"devDependencies": {
 		"@types/node": "22.10.1",
@@ -19,7 +20,7 @@
 		"browser.d.ts"
 	],
 	"main": "./lib/node/main.js",
-	"name": "vscode-nls",
+	"name": "@codeeditorland/nls",
 	"scripts": {
 		"clean": "rimraf lib",
 		"compile": "tsc -b ./tsconfig.json",
